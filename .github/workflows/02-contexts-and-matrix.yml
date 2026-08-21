@@ -11,40 +11,39 @@ env:
 jobs:
     build-metadata:
         runs-on: ubuntu-latest
-        output:
+        outputs:
             artifact-version: ${{ steps.version-gen.outputs.version }}
         steps:
             - name: Generate dynamic version
-                id: version-gen
-                run: |
-                    BUILD_TIME=$(date +'%Y%m%d%H%M')
-                    VERSION='v1.0-${BUILD_TIME}-${{ github.run_number }}'
-                    echo "Generated version: $VERSION"
-                    echo "version=VERSION" >> $GITHUB_OUTPUT
+              id: version-gen
+              run: |
+                  BUILD_TIME=$(date +'%Y%m%d%H%M')
+                  VERSION="v1.0-${BUILD_TIME}-${{ github.run_number }}"
+                  echo "Generated version: $VERSION"
+                  echo "version=$VERSION" >> $GITHUB_OUTPUT
 
     test-matrix:
         needs: [ build-metadata ]
         runs-on: ubuntu-latest
         strategy:
+            fail-fast: false
             matrix:
-                fail-fast: false
-                matrix:
-                    node-version: [18.x, 20.x]
-                    environment: [ staging, production ]
-            steps:
-                - name: Setup environment detials
-                    env:
-                        TARGET_ENV: ${{ matrix.environment }}
-                        APP_VERSION: ${{ needs.build-metadata.outputs.artifact-version }}
-                    run: |
-                        echo "Testing $GLOBAL_APP_NAME"
-                        echo "Target Environment: $TARGET_ENV"
-                        echo "Node Version: ${{ matrix.node-version }}"
-                        echo "Artifact Version from Job 1: $APP_VERSION"
+                node-version: [18.x, 20.x]
+                environment: [ staging, production ]
+        steps:
+            - name: Setup environment details
+              env:
+                  TARGET_ENV: ${{ matrix.environment }}
+                  APP_VERSION: ${{ needs.build-metadata.outputs.artifact-version }}
+              run: |
+                  echo "Testing $GLOBAL_APP_NAME"
+                  echo "Target Environment: $TARGET_ENV"
+                  echo "Node Version: ${{ matrix.node-version }}"
+                  echo "Artifact Version from Job 1: $APP_VERSION"
 
     deploy-summary:
         needs: [ test-matrix ]
         runs-on: ubuntu-latest
         steps:
-            - name: Output status enemy
-                run: echo "All matrix builds passed successfully"
+            - name: Output status summary
+              run: echo "All matrix builds passed successfully"
