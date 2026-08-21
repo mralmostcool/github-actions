@@ -1,0 +1,26 @@
+name: 06 - Run Custom Composite Action
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  run-custom-action:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Reference local action using relative path syntax (./path/to/dir)
+      - name: Execute local audit action
+        id: auditor
+        uses: ./.github/actions/system-audit
+        with:
+          app-environment: 'production'
+          log-level: 'debug'
+
+      - name: Consume outputs from composite action
+        run: |
+          echo "Output received from action:"
+          echo "${{ steps.auditor.outputs.audit-summary }}"

@@ -1,0 +1,41 @@
+name: 'System and Environment Audit'
+description: 'Audits runner workspace resources and formats build metadata'
+inputs:
+  app-environment:
+    description: 'Target deployment environment'
+    required: true
+    default: 'development'
+  log-level:
+    description: 'Verbosity level'
+    required: false
+    default: 'info'
+outputs:
+  audit-summary:
+    description: 'Generated audit status string'
+    value: ${{ steps.generate-report.outputs.summary }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Validate environment inputs
+      shell: bash
+      run: |
+        echo "=== Running Composite Action: System Audit ==="
+        echo "Target Environment: ${{ inputs.app-environment }}"
+        echo "Log Level: ${{ inputs.log-level }}"
+
+    - name: Collect runner diagnostics
+      shell: bash
+      run: |
+        echo "Disk Usage:"
+        df -h /
+        echo "Available Memory:"
+        free -m
+
+    - name: Generate summary report
+      id: generate-report
+      shell: bash
+      run: |
+        TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+        REPORT="Audit passed for [${{ inputs.app-environment }}] at $TIMESTAMP"
+        echo "summary=$REPORT" >> $GITHUB_OUTPUT
