@@ -1,0 +1,29 @@
+name: 01 - Hello Github Actions
+
+# 1. Triggers: When should this run?
+on:
+  push:
+    branches: [ main, master]
+  workflow_dispatch: # Allows manual triggers from the GitHub UI
+
+# 2. Jobs: Isolated execution units
+jobs:
+  greet:
+
+    # The VM operating system
+    runs-on: ubuntu-latest
+
+    # 3. Steps: Sequential tasks executed on that VM
+    steps:
+      - name: Print welcome message
+        run: |
+          echo "Welcome to GitHub Actions!"
+          echo "Triggered by: ${{ github.actor }}"
+          echo "Event name: ${{ github.event_name }}"
+          echo "Current commit SHA: ${{ github.sha }}"
+
+      - name: Check runner environment
+        run: |
+          node -v
+          java -version
+          docker --version
